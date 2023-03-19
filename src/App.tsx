@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 
-import { Button, Input, Row, Table } from "antd";
+import { Button, Row, Spin, Table } from "antd";
 import ButtonGroup from "antd/es/button/button-group";
 import useNotification from "antd/es/notification/useNotification";
 import type { ColumnsType } from "antd/es/table";
@@ -25,20 +25,25 @@ const columns: ColumnsType<DataType> = [
   },
 ];
 
+type Repository = { node: { name: string; owner: { login: string } } };
+
 export function App() {
   const [notification] = useNotification();
   const [repositories, setRepositories] = useState<DataType[]>();
 
-  const handleRequest = useCallback((owner: string) => {
-    requestRepos(owner)
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRequest = useCallback(() => {
+    setIsLoading(true);
+    requestRepos()
+      .then((resp) => resp.json())
       .then((response) => {
-        if (response.data) {
-          const parsedData = JSON.parse(response.data);
-          // way too big schema, so repo is just "any"
-          const repos = parsedData?.map((repo: any) => {
+        if (response?.data?.search?.edges) {
+          const parsedData = response.data.search.edges;
+          const repos = parsedData.map((repo: Repository) => {
             return {
-              name: repo?.name,
-              owner: repo?.owner?.login,
+              name: repo.node.name,
+              owner: repo.node.owner.login,
             };
           });
           setRepositories(repos);
@@ -51,29 +56,25 @@ export function App() {
         notification.warning({
           message: error.message || "Something went wrong",
         });
-      });
-  }, []);
-
-  const handleSubmit = useCallback((event: React.SyntheticEvent) => {
-    event.preventDefault();
-    const data = new FormData(event.nativeEvent.target as HTMLFormElement);
-    const owner = data.get("owner") as string;
-    handleRequest(owner);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   return (
     <div className="Wrapper">
       <div>
-        <form onSubmit={handleSubmit}>
-          <ButtonGroup>
-            <Button onClick={handleSubmit}>Get Repos!</Button>
-            <Input name="owner" />
-          </ButtonGroup>
-        </form>
+        <ButtonGroup>
+          <Button onClick={handleRequest}>Get Repos!</Button>
+        </ButtonGroup>
+        {isLoading && (
+          <div>
+            <Spin />
+          </div>
+        )}
         {repositories && (
           <Row>
             <Table
-              rowKey="id"
+              rowKey="name"
               dataSource={repositories}
               columns={columns}
               pagination={{ totalBoundaryShowSizeChanger: 100 }}

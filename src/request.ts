@@ -1,20 +1,29 @@
-import { Axios } from "axios";
-import qs from 'querystring';
-
-const AxiosInstance = new Axios({
-  baseURL: "https://api.github.com",
-});
-
-export function requestRepos(owner: string) {
-  return AxiosInstance.get("/repositories", {
-    params: {
-      q: owner,
-      language: "typescript",
-      sort: "stars",
-      order: "desc",
-    },
-    paramsSerializer: {
-      serialize: (params) => qs.stringify({...params, timestamp: Date.now() })
+const query = {
+  query: `
+    query{
+      search(query:"is:public language:typescript", type:REPOSITORY, first:100){
+        repositoryCount
+        edges{
+          node{
+            ... on Repository{
+              name
+              owner {
+                login
+              }
+            }
+          }
+        }
+      }
     }
+  `
+}
+export function requestRepos() {
+  return fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `bearer ${process.env.TOKEN}`,
+    },
+    body: JSON.stringify(query),
   });
 }
