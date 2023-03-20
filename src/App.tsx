@@ -29,8 +29,8 @@ export function App() {
   const [notification] = useNotification();
   const [repositories, setRepositories] = useState<DataType[]>();
 
-  const handleRequest = useCallback((owner: string) => {
-    requestRepos(owner)
+  const handleRequest = useCallback(() => {
+    requestRepos()
       .then((response) => {
         if (response.data) {
           const parsedData = JSON.parse(response.data);
@@ -54,22 +54,12 @@ export function App() {
       });
   }, []);
 
-  const handleSubmit = useCallback((event: React.SyntheticEvent) => {
-    event.preventDefault();
-    const data = new FormData(event.nativeEvent.target as HTMLFormElement);
-    const owner = data.get("owner") as string;
-    handleRequest(owner);
-  }, []);
-
   return (
     <div className="Wrapper">
       <div>
-        <form onSubmit={handleSubmit}>
-          <ButtonGroup>
-            <Button onClick={handleSubmit}>Get Repos!</Button>
-            <Input name="owner" />
-          </ButtonGroup>
-        </form>
+        <ButtonGroup>
+          <Button onClick={handleRequest}>Get Repos!</Button>
+        </ButtonGroup>
         {repositories && (
           <Row>
             <Table

@@ -5,10 +5,10 @@ const AxiosInstance = new Axios({
   baseURL: "https://api.github.com",
 });
 
-export function requestRepos(owner: string) {
+export function requestRepos() {
   return AxiosInstance.get("/repositories", {
     params: {
-      q: owner,
+      q: 'react',
       language: "typescript",
       sort: "stars",
       order: "desc",
