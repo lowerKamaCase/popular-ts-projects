@@ -22,7 +22,7 @@ export function requestRepos() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `bearer ${process.env.TOKEN}`,
+      Authorization: "bearer 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",
     },
     body: JSON.stringify(query),
   });
