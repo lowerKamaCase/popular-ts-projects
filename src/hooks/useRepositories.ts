@@ -14,10 +14,10 @@ export function useRepositories() {
     setIsLoading(true);
     requestRepositories(query)
       .then((resp) => resp.json())
-      .then((response) => {
+      .then((response: {data: { search: { edges: ResponseRepository[]}}}) => {
         if (response?.data?.search?.edges) {
-          const parsedData = response.data.search.edges;
-          const repos = parsedData.map((repo: ResponseRepository) => {
+          const edges = response.data.search.edges;
+          const repos = edges.map((repo: ResponseRepository) => {
             return {
               name: repo.node.name,
               owner: repo.node.owner.login,
